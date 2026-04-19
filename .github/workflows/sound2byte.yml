@@ -24,7 +24,7 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: |
-          pip install pydub
+          pip install pydub numpy
           sudo apt-get install -y ffmpeg
       - name: Run
         run: python sound2byte.py "${{ inputs.audio_file || 'sound.mp3' }}"
