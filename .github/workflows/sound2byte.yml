@@ -1,0 +1,55 @@
+name: sound2byte
+
+on:
+  push:
+    paths:
+      - '*.wav'
+      - '*.mp3'
+      - '*.flac'
+      - '*.ogg'
+  workflow_dispatch:
+    inputs:
+      audio_file:
+        description: 'Audio file name (e.g., sound.wav)'
+        required: true
+        type: string
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Install ffmpeg
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Run sound2byte
+      run: |
+        if [ -n "${{ inputs.audio_file }}" ]; then
+          python sound2byte.py "${{ inputs.audio_file }}"
+        else
+          for f in *.wav *.mp3 *.flac *.ogg; do
+            if [ -f "$f" ]; then
+              echo "=== $f ==="
+              python sound2byte.py "$f"
+            fi
+          done
+        fi
+    
+    - name: Save output
+      run: python sound2byte.py "${{ inputs.audio_file }}" > formula.txt
+      if: inputs.audio_file != ''
+    
+    - name: Upload formula
+      uses: actions/upload-artifact@v4
+      with:
+        name: bytebeat-formula
+        path: formula.txt
+      if: inputs.audio_file != ''
