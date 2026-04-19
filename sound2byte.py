@@ -4,7 +4,7 @@ from scipy.signal import resample
 import sys
 import struct
 
-def sound_to_bytebeat(input_file, output_file="bytebeat.wav", target_rate=8000, method="direct"):
+def sound_to_bytebeat(input_file, output_file="99477_Every_End....mp3", target_rate=8000, method="direct"):
     """
     Convert any sound file to ByteBeat audio.
     
