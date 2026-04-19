@@ -1,16 +1,18 @@
-name: sound2byte
+name: sound2bytebeat
 
 on:
   push:
     paths:
-      - '*.wav'
       - '*.mp3'
+      - '*.wav'
       - '*.flac'
       - '*.ogg'
+      - '*.m4a'
+      - '*.aac'
   workflow_dispatch:
     inputs:
       audio_file:
-        description: 'Audio file name (e.g., sound.wav)'
+        description: 'Audio filename (e.g., song.mp3)'
         required: true
         type: string
 
@@ -19,37 +21,37 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Install ffmpeg
-      run: sudo apt-get update && sudo apt-get install -y ffmpeg
     
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
-    - name: Run sound2byte
+    - name: Install dependencies
       run: |
-        if [ -n "${{ inputs.audio_file }}" ]; then
-          python sound2byte.py "${{ inputs.audio_file }}"
-        else
-          for f in *.wav *.mp3 *.flac *.ogg; do
-            if [ -f "$f" ]; then
-              echo "=== $f ==="
-              python sound2byte.py "$f"
-            fi
-          done
-        fi
+        pip install pydub
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
     
-    - name: Save output
-      run: python sound2byte.py "${{ inputs.audio_file }}" > formula.txt
-      if: inputs.audio_file != ''
+    - name: Run sound2bytebeat (pushed file)
+      if: github.event_name == 'push'
+      run: |
+        for file in *.mp3 *.wav *.flac *.ogg *.m4a *.aac; do
+          if [ -f "$file" ]; then
+            echo "Processing: $file"
+            python sound2bytebeat.py "$file"
+          fi
+        done
+    
+    - name: Run sound2bytebeat (manual trigger)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        python sound2bytebeat.py "${{ inputs.audio_file }}"
     
     - name: Upload formula
       uses: actions/upload-artifact@v4
       with:
         name: bytebeat-formula
-        path: formula.txt
-      if: inputs.audio_file != ''
+        path: bytebeat_formula.txt
